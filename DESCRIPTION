@@ -1,12 +1,26 @@
-Package: PPItools
+Package: ppitools
 Type: Package
-Title: What the Package Does (Title Case)
-Version: 0.1.0
-Author: Who wrote it
-Maintainer: The package maintainer <yourself@somewhere.net>
+Title: Tools For Protein-Protein Interaction Networks
+Version: 0.0.0.9000
+Author: person("Alexander", "Loboda", email="loboda@rain.ifmo.ru", role = c("aut", "cre")),
+        person("Mykyta", "Artomov", email="artomov@broadinstitute.org", role = "aut")
+Maintainer: Alexander Loboda <loboda@rain.ifmo.ru>
 Description: More about what it does (maybe more than one line)
     Use four spaces when indenting paragraphs within the Description.
-License: What license is it under?
+License: MIT + file LICENSE
+Imports:
+  igraph,
+  BioNet,
+  mwcsr,
+  foreach,
+  doParallel, 
+  parallel
+Remotes:
+  ctlab/mwcsr
+Depends: R (>= 3.3.2)
 Encoding: UTF-8
 LazyData: true
 Suggests: testthat
+RoxygenNote: 6.0.1
+Url: https://github.com/alexloboda/PPItools
+BugReports: https://github.com/alexloboda/PPItools/issues
