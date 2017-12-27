@@ -78,7 +78,7 @@ posterior_probabilities <- function(gene_pvals,
   }
   net <- extract_subgraph(net, sg)
 
-  res <- foreach::`%do%`(
+  res <- foreach::`%dopar%`(
     foreach::foreach(i = 1:permutations, .combine = `+`, .inorder = FALSE), {
       random_net <- permute(net)
       igraph::V(sg)$name %in% igraph::V(solve(random_net))$name

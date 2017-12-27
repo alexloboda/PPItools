@@ -2,7 +2,7 @@
 
 namespace shuffler {
     Shuffler::Shuffler(unsigned n, unsigned hard_stop) :graph(n), n(n), 
-                                                 hard_stop(hard_stop) {
+                                        hard_stop(hard_stop), changed(true) {
         random_device rd;
         mersenne = mt19937(rd());
         edges.resize(n, vector<bool>(n, false));
@@ -16,6 +16,7 @@ namespace shuffler {
         edges[u][v] = true;
         ends.emplace_back(v, u);
         tokens.push_back(std::move(graph.add(v, u)));
+        changed = true;
     }
 
     vector<unsigned> Shuffler::perm() {
@@ -31,6 +32,10 @@ namespace shuffler {
     }
 
     bool Shuffler::shake_it(){
+        if (changed) {
+            rng_edge = uniform_int_distribution<unsigned>(0, tokens.size() - 1);
+            changed = false;
+        }
         while (true) {
             --hard_stop;
             if (hard_stop == 0) {

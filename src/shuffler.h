@@ -8,6 +8,7 @@ namespace shuffler {
 
     class Shuffler {
         long n;
+        bool changed;
         unsigned hard_stop;
         vector<unsigned> permutation;
         vector<vector<bool>> edges;
