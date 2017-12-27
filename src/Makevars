@@ -1,0 +1,5 @@
+CXX_STD = CXX11
+SOURCES = dgraph/DynamicGraph.cpp dgraph/EulerTourForest.cpp shake.cpp \
+					shuffler.cpp RcppExports.cpp
+OBJECTS = dgraph/DynamicGraph.o dgraph/EulerTourForest.o shuffler.o shake.o \
+					RcppExports.o
