@@ -48,6 +48,11 @@ posterior_probabilities <- function(gene_pvals,
                                     solver_time_factor = 1.0,
                                     permutation_method = c("igraph", "package"),
                                     permutations_time_factor = 1.0) {
+  pvals <- gene_pvals
+  if(!(class(pvals) == "numeric" && all(pvals >= 0) && all(pvals <= 1))) {
+    stop("Invalid p-values")
+  }
+
   cl <- parallel::makeCluster(threads)
   doParallel::registerDoParallel(cl)
   on.exit(parallel::stopCluster(cl))

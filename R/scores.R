@@ -1,6 +1,6 @@
 #' Scoring function generator (beta-uniform model)
 #' @export
-#' @param pvals a numeric vector.Pp-values that will be used for learning
+#' @param pvals a numeric vector. P-values that will be used for learning
 #'              scoring function
 #' @param fdr false discovery rate. It is used for calculating threshold p-value.
 #'            P-values less than threshold value will be scored positively.
