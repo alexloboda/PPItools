@@ -27,9 +27,9 @@ perm_fun <- function(permutator, tf) {
 
 pvalue_test <- function(pdf, g, ps) {
   m <- nrow(pdf)
-  list(res = sapply(V(g)$name, function(name) {
+  sapply(V(g)$name, function(name) {
     sum(pdf[(degree(g, name) + 1):m, name]) / ps
-  }), pdf = head(pdf))
+  })
 }
 
 #' computes posterior smth
