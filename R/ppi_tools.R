@@ -25,6 +25,13 @@ perm_fun <- function(permutator, tf) {
   f
 }
 
+pvalue_test <- function(pdf, g, ps) {
+  m <- nrow(pdf)
+  list(res = sapply(V(g)$name, function(name) {
+    sum(pdf[(degree(g, name) + 1):m, name]) / ps
+  }), pdf = head(pdf))
+}
+
 #' computes posterior smth
 #' @import igraph
 #' @export
@@ -82,13 +89,25 @@ posterior_probabilities <- function(gene_pvals,
     return(NULL)
   }
   net <- extract_subgraph(net, sg)
+  degree_pdf <- matrix(0, ncol = length(V(sg)), nrow = length(V(net)),
+                       dimnames = list(c(), col = V(sg)$name))
+
+  comb <- function(acc, x) {
+    pos <- cbind(x + 1, seq_len(length(x)))
+    acc[pos] <- acc[pos] + 1
+    acc
+  }
 
   res <- foreach::`%dopar%`(
-    foreach::foreach(i = 1:permutations, .combine = `+`, .inorder = FALSE), {
+    foreach::foreach(i = 1:permutations, .init = degree_pdf, .combine = comb,
+                     .inorder = FALSE), {
       random_net <- permute(net)
-      igraph::V(sg)$name %in% igraph::V(solve(random_net))$name
+      mod <- solve(random_net)
+      res <- setNames(rep(0, length(V(sg))), V(sg)$name)
+      int <- intersect(V(mod)$name, V(sg)$name)
+      res[int] <- degree(mod, int)
+      res
     }
   )
-
-  setNames(res / permutations, V(sg)$name)
+  pvalue_test(res, sg, permutations)
 }
