@@ -1,4 +1,4 @@
-extract_subgraph <- function(net, sg) {
+extract_component <- function(net, sg) {
   genes <- V(sg)$name
   membership <- components(net)$membership
   id <- which(V(net)$name == genes[1])
@@ -27,9 +27,9 @@ perm_fun <- function(permutator, tf) {
 
 pvalue_test <- function(pdf, g, ps) {
   m <- nrow(pdf)
-  sapply(V(g)$name, function(name) {
-    sum(pdf[(degree(g, name) + 1):m, name]) / ps
-  })
+  setNames(sapply(V(g)$name, function(name) {
+    pdf[(degree(g, name) + 1), name] / ps
+  }), V(g)$name)
 }
 
 #' computes posterior smth
@@ -47,7 +47,7 @@ pvalue_test <- function(pdf, g, ps) {
 #' @param permutation_time_factor time factor for permutations
 posterior_probabilities <- function(gene_pvals,
                                     network,
-                                    permutations = 10000,
+                                    permutations = 1000,
                                     scoring_function = BUM_score(gene_pvals),
                                     threads = parallel::detectCores(),
                                     verbose = FALSE,
@@ -88,7 +88,7 @@ posterior_probabilities <- function(gene_pvals,
   if (length(V(sg)) == 0) {
     return(NULL)
   }
-  net <- extract_subgraph(net, sg)
+  net <- extract_component(net, sg)
   degree_pdf <- matrix(0, ncol = length(V(sg)), nrow = length(V(net)),
                        dimnames = list(c(), col = V(sg)$name))
 
@@ -96,6 +96,10 @@ posterior_probabilities <- function(gene_pvals,
     pos <- cbind(x + 1, seq_len(length(x)))
     acc[pos] <- acc[pos] + 1
     acc
+  }
+
+  if (permutations == 0) {
+    return(setNames(rep(0, length(V(sg))), V(sg)$name))
   }
 
   res <- foreach::`%dopar%`(
