@@ -21,7 +21,7 @@ binary_search <- function(f, t, tol) {
   (r + l) / 2
 }
 
-#' computes posterior smth
+#' computes p(U|BM)
 #' @import igraph
 #' @export
 #' @param pvals a named vector of p-values
@@ -36,9 +36,9 @@ posterior_probabilities <- function(pvals,
                                     network,
                                     scoring_function = BUM_score(pvals),
                                     threads = parallel::detectCores(),
-                                    verbose = FALSE,
+                                    solver_time_factor = 1.0,
                                     simplify = TRUE,
-                                    solver_time_factor = 1.0) {
+                                    verbose = FALSE) {
   if(!(class(pvals) == "numeric" && all(pvals >= 0) && all(pvals <= 1))) {
     stop("Invalid p-values")
   }
