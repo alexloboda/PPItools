@@ -7,6 +7,16 @@ extract_component <- function(net, sg) {
   induced_subgraph(net, remain)
 }
 
+plot_mwcs <- function(g, pps, colors = 16) {
+  pps <- log(pps)
+  pps[pps == -Inf] <- min(pps[pps > -Inf])
+  cls <- heat.colors(colors)
+  V(g)$color <- cls[cut(pps[V(g)$name], colors)]
+  V(g)$size <- 8
+  V(g)$frame.color <- "white"
+  plot(g, layout=layout_with_fr, vertex.label.cex = 0.6)
+}
+
 binary_search <- function(f, t, tol) {
   l <- 0.0
   r <- 1.0
@@ -38,7 +48,8 @@ posterior_probabilities <- function(pvals,
                                     threads = parallel::detectCores(),
                                     solver_time_factor = 1.0,
                                     simplify = TRUE,
-                                    verbose = FALSE) {
+                                    verbose = FALSE,
+                                    plot = TRUE) {
   if(!(class(pvals) == "numeric" && all(pvals >= 0) && all(pvals <= 1))) {
     stop("Invalid p-values")
   }
@@ -77,7 +88,7 @@ posterior_probabilities <- function(pvals,
   ns <- V(sg)$name
   sg_weight <- sum(V(sg)$score)
 
- foreach::`%dopar%` (
+  pps <- foreach::`%dopar%` (
     foreach::foreach(gene = ns, .combine = c, .inorder = FALSE,
                      .packages = "igraph", .export = "binary_search"), {
       g <- delete.vertices(net, gene)
@@ -91,4 +102,6 @@ posterior_probabilities <- function(pvals,
       rm(g, sol)
       setNames((1 - p(pvals[gene], fb)) * (threshold_pval / p_bum), gene)
   })
+  if (plot) plot_mwcs(sg, pps)
+  pps
 }
