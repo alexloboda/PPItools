@@ -17,6 +17,12 @@ bum_score <- function(pvals, fdr = 0.01, threshold_pval,
   }
   type <- match.arg(type, c("aggressive", "light"))
   fb <- BioNet::fitBumModel(pvals, plot = bum_plot)
+
+  prob <- function(x, fb) {
+    sn <- ((1 - fb$lambda) * stats::dbeta(x, fb$a, 1)) / fb$lambda
+    sn / (sn + 1)
+  }
+
   if (verbose) {
     print(paste("lambda: ", fb$lambda))
     print(paste("alpha: ", fb$a))
@@ -26,17 +32,15 @@ bum_score <- function(pvals, fdr = 0.01, threshold_pval,
   } else {
     threshold <- BioNet::fdrThreshold(fdr, fb)
   }
-  if (type == "aggressive") {
+  res <- list(p = prob, fb = fb)
+  res$score <- if (type == "aggressive") {
     function(x) {
       (fb$a - 1) * (log(x) - log(threshold))
     }
   } else {
-    prob <- function(x, fb) {
-      sn <- ((1 - fb$lambda) * stats::dbeta(x, fb$a, 1)) / fb$lambda
-      sn / (sn + 1)
-    }
     function(x) {
       log(prob(x, fb)) - log(prob(threshold, fb))
     }
   }
+  res
 }
