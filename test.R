@@ -16,8 +16,8 @@ filter_genes <- function(df, set, evidence) {
   rbind(replaced, df[!(df$snp_id %in% snps), ])
 }
 
-#net_df <- read.table("scores")[, c(1, 2)]
-#net <- igraph::graph_from_edgelist(as.matrix(net_df), directed = FALSE)
+net_df <- read.table("scores")[, c(1, 2)]
+net <- igraph::graph_from_edgelist(as.matrix(net_df), directed = FALSE)
 #
 #fit_pvals <- read.table("UC.PC5.assoc.logistic", header = TRUE)
 #fit_pvals <- fit_pvals$P
@@ -53,6 +53,7 @@ score <- bum_score(pvals, type = "aggressive", bum_plot = T, fdr = 0.1)
 #genes <- genes[genes$evidence != "nearest", ]
 #pvals <- setNames(genes$p, genes$gene)
 
+print(BM_pvalue(pvals, net, score, simplify = TRUE, threads = 4))
 pps <- posterior_probabilities(pvals, net, score, simplify = TRUE, threads = 4)
 
 for (gene in dimnames(pps)[[2]]) {
