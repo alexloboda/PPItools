@@ -2,33 +2,26 @@
 % Please edit documentation in R/ppi_tools.R
 \name{posterior_probabilities}
 \alias{posterior_probabilities}
-\title{computes posterior smth}
+\title{computes p(U|BM)}
 \usage{
-posterior_probabilities(gene_pvals, network, permutations = 10000,
-  scoring_function = BUM_score(gene_pvals),
-  threads = parallel::detectCores(), verbose = FALSE, simplify = TRUE,
-  solver_time_factor = 1, permutation_method = c("igraph", "package"),
-  permutations_time_factor = 1)
+posterior_probabilities(pvals, network, scoring_function = BUM_score(pvals),
+  threads = parallel::detectCores(), solver_time_factor = 1,
+  simplify = TRUE, verbose = FALSE, plot = TRUE)
 }
 \arguments{
-\item{gene_pvals}{a named vector of p-values}
+\item{pvals}{a named vector of p-values}
 
 \item{network}{an igraph undirected graph object with vertex attribute "name"}
 
 \item{threads}{calculations will be run in this number of threads}
 
-\item{verbose}{be verbose}
-
-\item{simplify}{if FALSE missing p-values will be filled by 0.5}
-
 \item{solver_time_factor}{solver of MWCS problem will work amount of time
 proportionally to this factor}
 
-\item{permutation_method}{a method that will be used for permuations. 'package'
-supports different time factors}
+\item{simplify}{if FALSE missing p-values will be filled by 0.5}
 
-\item{permutation_time_factor}{time factor for permutations}
+\item{verbose}{be verbose}
 }
 \description{
-computes posterior smth
+computes p(U|BM)
 }

@@ -27,7 +27,7 @@ pvals <- subset(pvals, mut == "lof" & pval != 1.0)
 pvals <- setNames(pvals[[6]], pvals[[1]])
 
 #score <- bum_score(fit_pvals, type = "aggressive", bum_plot = T, threshold_pval = 5e-8)
-score <- bum_score(pvals, type = "aggressive", bum_plot = T, fdr = 0.05)
+score <- bum_score(pvals, type = "aggressive", bum_plot = T, threshold_pval = 1e-3, n = length(V(net)))
 
 #df <- read.table("nat_all_and_gws_annot.txt", header = TRUE, sep = "\t", stringsAsFactors = FALSE)
 #df <- df[df$gene != "", ]

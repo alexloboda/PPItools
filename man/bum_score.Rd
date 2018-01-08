@@ -5,10 +5,10 @@
 \title{Scoring function generator (beta-uniform model)}
 \usage{
 bum_score(pvals, fdr = 0.01, threshold_pval, type = c("aggressive",
-  "light"), bum_plot = FALSE, verbose = FALSE)
+  "light"), bum_plot = FALSE, n = length(pvals), verbose = FALSE)
 }
 \arguments{
-\item{pvals}{a numeric vector.Pp-values that will be used for learning
+\item{pvals}{a numeric vector. P-values that will be used for learning
 scoring function}
 
 \item{fdr}{false discovery rate. It is used for calculating threshold p-value.
@@ -16,7 +16,11 @@ P-values less than threshold value will be scored positively.}
 
 \item{threshold_pval}{custom p-value threshold}
 
+\item{type}{aggressive or light}
+
 \item{bum_plot}{whether or not plot BUM fitting plot}
+
+\item{n}{potential number of genes}
 
 \item{verbose}{be verbose}
 }

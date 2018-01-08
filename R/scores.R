@@ -5,7 +5,7 @@
 #' @param fdr false discovery rate. It is used for calculating threshold p-value.
 #'            P-values less than threshold value will be scored positively.
 #' @param threshold_pval custom p-value threshold
-#' @param type
+#' @param type aggressive or light
 #' @param bum_plot whether or not plot BUM fitting plot
 #' @param verbose be verbose
 #' @param n potential number of genes
