@@ -8,15 +8,21 @@
 #' @param type
 #' @param bum_plot whether or not plot BUM fitting plot
 #' @param verbose be verbose
+#' @param n potential number of genes
 #' @seealso \code{\link{posterior_probabilities}}
 bum_score <- function(pvals, fdr = 0.01, threshold_pval,
                       type = c("aggressive", "light"), bum_plot = FALSE,
-                      verbose = FALSE) {
+                      n = length(pvals), verbose = FALSE) {
   if(!(class(pvals) == "numeric" && all(pvals >= 0) && all(pvals <= 1))) {
     stop("Invalid p-values")
   }
   type <- match.arg(type, c("aggressive", "light"))
-  fb <- BioNet::fitBumModel(pvals, plot = bum_plot)
+
+  fit_pvals <- pvals
+  if (n > length(pvals)) {
+    fit_pvals <- c(fit_pvals, runif(n - length(pvals)))
+  }
+  fb <- BioNet::fitBumModel(fit_pvals, plot = bum_plot)
 
   prob <- function(x, fb) {
     sn <- ((1 - fb$lambda) * stats::dbeta(x, fb$a, 1)) / fb$lambda

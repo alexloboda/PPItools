@@ -11,7 +11,9 @@ plot_mwcs <- function(g, pps, colors = 16) {
   pps <- log(pps)
   pps[pps == -Inf] <- min(pps[pps > -Inf])
   cls <- heat.colors(colors)
-  V(g)$color <- cls[cut(pps[V(g)$name], colors)]
+  pps_cs <- cls[cut(c(pps[V(g)$name], 0), colors)]
+  pps_cs <- head(pps_cs, length(pps_cs) - 1)
+  V(g)$color <- pps_cs
   V(g)$size <- 8
   V(g)$frame.color <- "white"
   plot(g, layout=layout_with_fr, vertex.label.cex = 0.6)

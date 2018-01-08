@@ -22,11 +22,12 @@ net <- igraph::graph_from_edgelist(as.matrix(net_df), directed = FALSE)
 #fit_pvals <- read.table("UC.PC5.assoc.logistic", header = TRUE)
 #fit_pvals <- fit_pvals$P
 #fit_pvals <- fit_pvals[!is.na(fit_pvals)]
-pvals <- read.table("fsgs_pvals")
-pvals <- setNames(pvals[[2]], pvals[[1]])
+pvals <- read.table("SCZ_denovo_n2772_poissonGeneTest.txt", header = TRUE)
+pvals <- subset(pvals, mut == "lof" & pval != 1.0)
+pvals <- setNames(pvals[[6]], pvals[[1]])
 
 #score <- bum_score(fit_pvals, type = "aggressive", bum_plot = T, threshold_pval = 5e-8)
-score <- bum_score(pvals, type = "aggressive", bum_plot = T, fdr = 0.1)
+score <- bum_score(pvals, type = "aggressive", bum_plot = T, fdr = 0.05)
 
 #df <- read.table("nat_all_and_gws_annot.txt", header = TRUE, sep = "\t", stringsAsFactors = FALSE)
 #df <- df[df$gene != "", ]
@@ -53,8 +54,9 @@ score <- bum_score(pvals, type = "aggressive", bum_plot = T, fdr = 0.1)
 #genes <- genes[genes$evidence != "nearest", ]
 #pvals <- setNames(genes$p, genes$gene)
 
-print(BM_pvalue(pvals, net, score, simplify = TRUE, threads = 4))
-pps <- posterior_probabilities(pvals, net, score, simplify = TRUE, threads = 4)
+#print(BM_pvalue(pvals, net, score, simplify = TRUE, threads = 4))
+
+pps <- posterior_probabilities(pvals, net, score, simplify = FALSE, threads = 4)
 
 for (gene in dimnames(pps)[[2]]) {
   png(paste0("plots_melanoma/", gene))
