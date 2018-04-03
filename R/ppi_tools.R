@@ -150,7 +150,8 @@ permutation_freq <- function(pvals,
 #' @inheritParams permutation_freq
 preprocess <- function(pvals, network, simplify, scf) {
   if (class(pvals) == "data.frame") {
-    pvals <- extract_gwas(pvals)
+    extract_gwas(pvals)
+    pvals <- setNames(pvals$p_value, pvals$gene)
   }
 
   if(!(class(pvals) == "numeric" && all(pvals >= 0) && all(pvals <= 1))) {
