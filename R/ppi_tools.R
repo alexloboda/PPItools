@@ -70,6 +70,8 @@ estimate_network <- function(network,
   stopifnot("score" %in% igraph::list.vertex.attributes(network))
   stopifnot(solver_time_factor > 0)
 
+  network <- igraph::simplify(network)
+
   args <- list(...)
   args$max_iterations <- round(1000 * solver_time_factor)
 
