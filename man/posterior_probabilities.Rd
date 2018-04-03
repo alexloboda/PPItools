@@ -9,18 +9,20 @@ posterior_probabilities(pvals, network, scoring_function = BUM_score(pvals),
   simplify = TRUE, verbose = FALSE, plot = TRUE)
 }
 \arguments{
-\item{pvals}{a named vector of p-values}
+\item{pvals}{named vector of pvals or data frame containing columns \
+gene, p_value and locus}
 
-\item{network}{an igraph undirected graph object with vertex attribute "name"}
+\item{network}{igraph undirected graph with supplied gene names as vertex names}
 
-\item{threads}{calculations will be run in this number of threads}
+\item{threads}{number of threads that could be used for computations}
 
-\item{solver_time_factor}{solver of MWCS problem will work amount of time
-proportionally to this factor}
+\item{solver_time_factor}{solver will take time proportionally to this parameter}
 
-\item{simplify}{if FALSE missing p-values will be filled by 0.5}
+\item{simplify}{if FALSE sets p-value 0.5 to genes with unknown p-value}
 
 \item{verbose}{be verbose}
+
+\item{plot}{whether to plot a module}
 }
 \description{
 computes p(U|BM)

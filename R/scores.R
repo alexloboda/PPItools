@@ -1,3 +1,14 @@
+extract_gwas <- function(gwas) {
+  if (!all(c("gene", "p_value", "locus") %in% colnames(gwas))) {
+    stop(paste("if pvals argument presented as data.frame, it must contains",
+         "columns 'gene', 'p_value' and 'locus'"))
+  }
+  pvals <- gwas$p_value
+  mask <- !duplicated(gwas$locus)
+  df <- gwas[mask]
+  setNames(df$p_value, df$gene)
+}
+
 #' Scoring function generator (beta-uniform model)
 #' @export
 #' @param pvals a numeric vector. P-values that will be used for learning
@@ -13,6 +24,10 @@
 bum_score <- function(pvals, fdr = 0.01, threshold_pval,
                       type = c("aggressive", "light"), bum_plot = FALSE,
                       n = length(pvals), verbose = FALSE) {
+  if (class(pvals) == "data.frame") {
+    pvals <- extract_gwas(pvals)
+  }
+
   if(!(class(pvals) == "numeric" && all(pvals >= 0) && all(pvals <= 1))) {
     stop("Invalid p-values")
   }

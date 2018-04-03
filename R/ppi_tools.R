@@ -7,9 +7,17 @@ extract_component <- function(net, sg) {
   induced_subgraph(net, remain)
 }
 
-plot_mwcs <- function(g, pps, colors = 16) {
-  pps <- log(pps)
-  pps[pps == -Inf] <- min(pps[pps > -Inf])
+#' plots heat-mapped module
+#' @export
+#' @param g igraph network
+#' @param pps named vector of some posterior probabilies
+#' @param log_space considering posteriors in log space
+#' @param colors number of colors in heat map palette
+plot_mwcs <- function(g, pps, log_space = TRUE, colors = 16) {
+  if (log_space) {
+    pps <- log(pps)
+    pps[pps == -Inf] <- min(pps[pps > -Inf])
+  }
   cls <- heat.colors(colors)
   pps_cs <- cls[cut(c(pps[V(g)$name], 0), colors)]
   pps_cs <- head(pps_cs, length(pps_cs) - 1)
@@ -20,6 +28,7 @@ plot_mwcs <- function(g, pps, colors = 16) {
 }
 
 perm_fun <- function(permutator, tf) {
+  permutator <- match.arg(permutator, c('igraph', 'ppitools'))
   if (permutator == "igraph") {
     if (tf != 1.0) {
       stop("igraph permutator doesn't support time control")
@@ -51,7 +60,97 @@ binary_search <- function(f, t, tol) {
   (r + l) / 2
 }
 
+#' finds active module of given network
+#' @export
+#' @inheritParams permutation_freq
+#' @param ... other parameters of mwcsr::rmwcs
+estimate_network <- function(network,
+                             solver_time_factor = 1.0,
+                             ...) {
+  stopifnot("score" %in% igraph::list.vertex.attributes(network))
+  stopifnot(solver_time_factor > 0)
+
+  args <- list(...)
+  args$max_iterations <- round(1000 * solver_time_factor)
+
+  solve <- do.call(mwcsr::rmwcs, args)
+  solve(network)
+}
+
+#' computes frequencies of genes to be in a random network
+#' @param pvals named vector of pvals or data frame containing columns \
+#' gene, p_value and locus
+#' @param network igraph undirected graph with supplied gene names as vertex names
+#' @param scf scoring function(e.g. bum_score output)
+#' @param permute_interactome should interactome be shuffled
+#' @param permute_pvals should p-values be shuffled
+#' @param n_permutations number of permutations to do
+#' @param permutation_method igraph or ppitools, choose second choice if \
+#' you want to change permutation_time_factor
+#' @param permutation_time_factor permutator will take time proportionally to this parameter
+#' @param solver_time_factor solver will take time proportionally to this parameter
+#' @param plot whether to plot a module
+#' @param simplify if FALSE sets p-value 0.5 to genes with unknown p-value
+#' @param threads number of threads that could be used for computations
+#' @export
+permutation_freq <- function(pvals,
+                             network,
+                             scoring_function = bum_score(pvals),
+                             permute_interactome = TRUE,
+                             permute_pvals = FALSE,
+                             n_permutations = 1000,
+                             permutation_method = c('igraph', 'ppitools'),
+                             permutation_time_factor = 1.0,
+                             solver_time_factor = 1.0,
+                             plot = FALSE,
+                             simplify = TRUE,
+                             threads = parallel::detectCores()) {
+  cl <- parallel::makeCluster(threads)
+  doParallel::registerDoParallel(cl)
+  on.exit(parallel::stopCluster(cl))
+
+  permute <- perm_fun(permutation_method, permutation_time_factor)
+
+  data <- preprocess(pvals, network, simplify, scoring_function)
+  lapply(names(data), function(n) assign(n, data[[n]], envir = parent.frame(n = 2)))
+
+  sg <- estimate_network(net, solver_time_factor)
+  if (length(V(sg)) == 0) {
+    return(NULL)
+  }
+  net <- extract_component(net, sg)
+
+
+  fs <- foreach::`%dopar%`(
+    foreach::foreach(i = 1:n_permutations, .combine = `+`, .packages = "igraph",
+                     .inorder = FALSE, .export = "estimate_network"), {
+      tmp <- net
+
+      if (permute_pvals) {
+        V(tmp)$score <- sample(V(tmp)$score)
+      }
+      if (permute_interactome) {
+        tmp <- permute(tmp)
+      }
+      module <- estimate_network(tmp, solver_time_factor)
+      V(net)$name %in% V(module)$name
+    }
+  )
+  setNames(fs / n_permutations, V(net)$name)
+}
+
+#' preprocesses network and p-values
+#'
+#' It is convinient to do before passing
+#' network to estimate_network function, especially in case when set of genes
+#' presetnted in pvals does not completely match to set of genes in network
+#' @export
+#' @inheritParams permutation_freq
 preprocess <- function(pvals, network, simplify, scf) {
+  if (class(pvals) == "data.frame") {
+    pvals <- extract_gwas(pvals)
+  }
+
   if(!(class(pvals) == "numeric" && all(pvals >= 0) && all(pvals <= 1))) {
     stop("Invalid p-values")
   }
@@ -59,6 +158,7 @@ preprocess <- function(pvals, network, simplify, scf) {
   if (length(names(pvals)) == 0) {
     stop("Please name the p-values with gene names ")
   }
+
   stopifnot(length(pvals) == length(names(pvals)))
   if (!simplify) {
     remain <- setdiff(V(network)$name, names(pvals))
@@ -78,13 +178,8 @@ preprocess <- function(pvals, network, simplify, scf) {
 #' computes p(U|BM)
 #' @import igraph
 #' @export
-#' @param pvals a named vector of p-values
-#' @param network an igraph undirected graph object with vertex attribute "name"
-#' @param threads calculations will be run in this number of threads
+#' @inheritParams permutation_freq
 #' @param verbose be verbose
-#' @param simplify if FALSE missing p-values will be filled by 0.5
-#' @param solver_time_factor solver of MWCS problem will work amount of time
-#'                           proportionally to this factor
 posterior_probabilities <- function(pvals,
                                     network,
                                     scoring_function = BUM_score(pvals),
@@ -130,17 +225,19 @@ posterior_probabilities <- function(pvals,
 }
 
 #' @export
+#' @rdname permutation_freq
+#' @param verbose verbosity
 BM_pvalue <- function(pvals,
                       network,
                       scoring_function = BUM_score(pvals),
                       threads = parallel::detectCores(),
                       solver_time_factor = 1.0,
                       simplify = TRUE,
-                      permutations = 100,
-                      permutation_method = c('igraph', 'package'),
+                      n_permutations = 100,
+                      permutation_method = c('igraph', 'ppitools'),
                       permutation_time_factor = 1.0,
                       verbose = FALSE) {
-  permute <- perm_fun(match.arg(permutation_method, c("igraph", "package")),
+  permute <- perm_fun(match.arg(permutation_method, c("igraph", "ppitools")),
                       permutation_time_factor)
   cl <- parallel::makeCluster(threads)
   doParallel::registerDoParallel(cl)
@@ -160,7 +257,7 @@ BM_pvalue <- function(pvals,
 
   init <- data.frame(weight = c(), degree = c())
   obs <- foreach::`%dopar%` (
-    foreach::foreach(i = 1:permutations, .combine = rbind, .init = init,
+    foreach::foreach(i = 1:n_permutations, .combine = rbind, .init = init,
                      .packages = "igraph"), {
       random_net <- permute(net)
       mod <- solve(random_net)

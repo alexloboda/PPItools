@@ -2,7 +2,11 @@
 
 export(BM_pvalue)
 export(bum_score)
+export(estimate_network)
+export(permutation_freq)
+export(plot_mwcs)
 export(posterior_probabilities)
+export(preprocess)
 import(igraph)
 importFrom(Rcpp,sourceCpp)
 useDynLib(ppitools)
