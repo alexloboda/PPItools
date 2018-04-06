@@ -266,6 +266,6 @@ BM_pvalue <- function(pvals,
       mod <- solve(random_net)
       list(weight = sum(V(mod)$score), degree = length(E(mod)) / length(V(mod)))
   })
-  list(p_val_weight = sum(obs$weight >= sum(V(sg)$score)) / permutations,
-       p_val_degree = sum(obs$degree >= length(E(sg)) / length(V(sg))) / permutations)
+  list(p_val_weight = sum(obs$weight >= sum(V(sg)$score)) / n_permutations,
+       p_val_degree = sum(obs$degree >= length(E(sg)) / length(V(sg))) / n_permutations)
 }
