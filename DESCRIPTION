@@ -21,8 +21,11 @@ Remotes:
 Depends: R (>= 3.3.2)
 Encoding: UTF-8
 LazyData: true
-Suggests: testthat
+Suggests: testthat,
+    knitr,
+    rmarkdown
 RoxygenNote: 6.0.1
 Url: https://github.com/alexloboda/PPItools
 BugReports: https://github.com/alexloboda/PPItools/issues
 LinkingTo: Rcpp
+VignetteBuilder: knitr

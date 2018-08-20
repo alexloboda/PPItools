@@ -5,7 +5,7 @@ extract_gwas <- function(gwas) {
   }
   pvals <- gwas$p_value
   mask <- !duplicated(gwas$locus)
-  df <- gwas[mask]
+  df <- gwas[mask, ]
   setNames(df$p_value, df$gene)
 }
 

@@ -22,9 +22,9 @@ net <- igraph::graph_from_edgelist(as.matrix(net_df), directed = FALSE)
 #fit_pvals <- read.table("UC.PC5.assoc.logistic", header = TRUE)
 #fit_pvals <- fit_pvals$P
 #fit_pvals <- fit_pvals[!is.na(fit_pvals)]
-pvals <- read.table("melanoma", header = TRUE)
-pvals <- subset(pvals, mut == "lof" & pval != 1.0)
-pvals <- setNames(pvals[[6]], pvals[[1]])
+pvals <- read.table("cad_pvals.txt", header = FALSE)
+#pvals <- subset(pvals, mut == "lof" & pval != 1.0)
+pvals <- setNames(pvals[[2]], pvals[[1]])
 
 #score <- bum_score(fit_pvals, type = "aggressive", bum_plot = T, threshold_pval = 5e-8)
 score <- bum_score(pvals, type = "aggressive", bum_plot = T, fdr = 0.05)
